@@ -93,6 +93,30 @@ You can also run tests (if any) with:
 python3 -m unittest discover
 ```
 
+## Build dmg and install locally
+Enter dmg-builder folder, copy the sample-config.sh to config.sh.
+```bash
+cd dmg-builder
+cp sample-config.sh config.sh
+```
+
+Remember to leave the local python venv to use the framework python3 to build.  Prefer to use 3.12.
+
+```bash
+./build.sh
+```
+When prompted to enter 10 digit ID, pick some random ids as this is for your local installation only.
+
+You may need to update `build.sh` after you install Python 3.12
+```
+python3 -m venv env
+```
+to
+```
+/Library/Frameworks/Python.framework/Versions/3.12/bin/python3 -m venv env
+```
+
+If it finishes successfully, you should see `macos-gemini-overlay.dmg` in the current folder.
 
 ## Final thoughts
 
