@@ -263,6 +263,11 @@ class AppDelegate(NSObject):
 
     # For capturing key commands while the key window (in focus).
     def keyDown_(self, event):
+		# Add this new block to handle the Escape key
+        if event.keyCode() == 53:  # Key code for Escape
+            self.hideWindow_(None)
+            return
+
         modifiers = event.modifierFlags()
         key_command = modifiers & NSCommandKeyMask
         key_alt = modifiers & NSAlternateKeyMask
