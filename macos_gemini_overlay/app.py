@@ -223,6 +223,10 @@ class AppDelegate(NSObject):
     def hideWindow_(self, sender):
         NSApp.hide_(None)
 
+    # Automatically hide the window when it's no longer the focus.
+    def windowDidResignKey_(self, notification):
+        self.hideWindow_(None)
+
     # Go to the default landing website for the overlay (in case accidentally navigated away).
     def goToWebsite_(self, sender):
         url = NSURL.URLWithString_(WEBSITE)
