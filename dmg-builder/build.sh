@@ -48,7 +48,7 @@ source config.sh
 
 # Create a build environment
 rm -rf env dist build *.egg-info
-python3 -m venv env
+/Library/Frameworks/Python.framework/Versions/3.12/bin/python3 -m venv env
 source env/bin/activate
 python3 -m pip install --upgrade pip
 python3 -m pip install setuptools==70.3.0 py2app pyobjc

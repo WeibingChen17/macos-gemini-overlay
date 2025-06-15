@@ -69,7 +69,7 @@ class AppDelegate(NSObject):
             NSMakeRect(500, 200, 970, 750),
             NSBorderlessWindowMask | NSResizableWindowMask,
             NSBackingStoreBuffered,
-            False
+            False,
         )
         self.window.setLevel_(NSFloatingWindowLevel)
         self.window.setCollectionBehavior_(
@@ -83,10 +83,11 @@ class AppDelegate(NSObject):
         config.preferences().setJavaScriptCanOpenWindowsAutomatically_(True)
         # Initialize the WebView with a frame
         self.webview = WKWebView.alloc().initWithFrame_configuration_(
-            ((0, 0), (970, 750)),  # Frame: origin (0,0), size (970x750)
-            config
+            ((0, 0), (970, 750)), config  # Frame: origin (0,0), size (970x750)
         )
-        self.webview.setAutoresizingMask_(NSViewWidthSizable | NSViewHeightSizable)  # Resizes with window
+        self.webview.setAutoresizingMask_(
+            NSViewWidthSizable | NSViewHeightSizable
+        )  # Resizes with window
         # Set a custom user agent
         safari_user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15"
         self.webview.setCustomUserAgent_(safari_user_agent)
@@ -102,19 +103,35 @@ class AppDelegate(NSObject):
         # Set up drag area (top sliver, full width)
         content_bounds = content_view.bounds()
         self.drag_area = DragArea.alloc().initWithFrame_(
-            NSMakeRect(0, content_bounds.size.height - DRAG_AREA_HEIGHT, content_bounds.size.width, DRAG_AREA_HEIGHT)
+            NSMakeRect(
+                0,
+                content_bounds.size.height - DRAG_AREA_HEIGHT,
+                content_bounds.size.width,
+                DRAG_AREA_HEIGHT,
+            )
         )
         content_view.addSubview_(self.drag_area)
         # Add close button to the drag area
         close_button = NSButton.alloc().initWithFrame_(NSMakeRect(5, 5, 20, 20))
         close_button.setBordered_(False)
-        close_button.setImage_(NSImage.imageWithSystemSymbolName_accessibilityDescription_("xmark.circle.fill", None))
+        close_button.setImage_(
+            NSImage.imageWithSystemSymbolName_accessibilityDescription_(
+                "xmark.circle.fill", None
+            )
+        )
         close_button.setTarget_(self)
         close_button.setAction_("hideWindow:")
         self.drag_area.addSubview_(close_button)
         # Update the webview sizing and insert it below drag area.
         content_view.addSubview_(self.webview)
-        self.webview.setFrame_(NSMakeRect(0, 0, content_bounds.size.width, content_bounds.size.height - DRAG_AREA_HEIGHT))
+        self.webview.setFrame_(
+            NSMakeRect(
+                0,
+                0,
+                content_bounds.size.width,
+                content_bounds.size.height - DRAG_AREA_HEIGHT,
+            )
+        )
         # Contact the target website.
         url = NSURL.URLWithString_(WEBSITE)
         request = NSURLRequest.requestWithURL_(url)
@@ -124,7 +141,9 @@ class AppDelegate(NSObject):
         # Set up script message handler for background color changes
         configuration = self.webview.configuration()
         user_content_controller = configuration.userContentController()
-        user_content_controller.addScriptMessageHandler_name_(self, "backgroundColorHandler")
+        user_content_controller.addScriptMessageHandler_name_(
+            self, "backgroundColorHandler"
+        )
         # Inject JavaScript to monitor background color changes
         script = """
             function sendBackgroundColor() {
@@ -134,10 +153,16 @@ class AppDelegate(NSObject):
             window.addEventListener('load', sendBackgroundColor);
             new MutationObserver(sendBackgroundColor).observe(document.body, { attributes: true, attributeFilter: ['style'] });
         """
-        user_script = WKUserScript.alloc().initWithSource_injectionTime_forMainFrameOnly_(script, WKUserScriptInjectionTimeAtDocumentEnd, True)
+        user_script = (
+            WKUserScript.alloc().initWithSource_injectionTime_forMainFrameOnly_(
+                script, WKUserScriptInjectionTimeAtDocumentEnd, True
+            )
+        )
         user_content_controller.addUserScript_(user_script)
         # Create status bar item with logo
-        self.status_item = NSStatusBar.systemStatusBar().statusItemWithLength_(NSSquareStatusItemLength)
+        self.status_item = NSStatusBar.systemStatusBar().statusItemWithLength_(
+            NSSquareStatusItemLength
+        )
         script_dir = os.path.dirname(os.path.abspath(__file__))
         logo_white_path = os.path.join(script_dir, LOGO_WHITE_PATH)
         self.logo_white = NSImage.alloc().initWithContentsOfFile_(logo_white_path)
@@ -149,61 +174,82 @@ class AppDelegate(NSObject):
         self.updateStatusItemImage()
         # Observe system appearance changes
         self.status_item.button().addObserver_forKeyPath_options_context_(
-            self, "effectiveAppearance", NSKeyValueObservingOptionNew, STATUS_ITEM_CONTEXT
+            self,
+            "effectiveAppearance",
+            NSKeyValueObservingOptionNew,
+            STATUS_ITEM_CONTEXT,
         )
         # Create status bar menu
         menu = NSMenu.alloc().init()
         # Create and configure menu items with explicit targets
-        show_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_("Show "+APP_TITLE, "showWindow:", "")
+        show_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Show " + APP_TITLE, "showWindow:", ""
+        )
         show_item.setTarget_(self)
         menu.addItem_(show_item)
-        hide_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_("Hide "+APP_TITLE, "hideWindow:", "h")
+        hide_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Hide " + APP_TITLE, "hideWindow:", "h"
+        )
         hide_item.setTarget_(self)
         menu.addItem_(hide_item)
-        home_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_("Home", "goToWebsite:", "g")
+        home_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Home", "goToWebsite:", "g"
+        )
         home_item.setTarget_(self)
         menu.addItem_(home_item)
-        clear_data_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_("Clear Web Cache", "clearWebViewData:", "")
+        clear_data_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Clear Web Cache", "clearWebViewData:", ""
+        )
         clear_data_item.setTarget_(self)
         menu.addItem_(clear_data_item)
-        set_trigger_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_("Set New Trigger", "setTrigger:", "")
+        set_trigger_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Set New Trigger", "setTrigger:", ""
+        )
         set_trigger_item.setTarget_(self)
         menu.addItem_(set_trigger_item)
-        install_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_("Install Autolauncher", "install:", "")
+        install_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Install Autolauncher", "install:", ""
+        )
         install_item.setTarget_(self)
         menu.addItem_(install_item)
-        uninstall_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_("Uninstall Autolauncher", "uninstall:", "")
+        uninstall_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Uninstall Autolauncher", "uninstall:", ""
+        )
         uninstall_item.setTarget_(self)
         menu.addItem_(uninstall_item)
-        quit_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_("Quit", "terminate:", "q")
+        quit_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Quit", "terminate:", "q"
+        )
         quit_item.setTarget_(NSApp)
         menu.addItem_(quit_item)
         # Set the menu for the status item
         self.status_item.setMenu_(menu)
         # Add resize observer
         NSNotificationCenter.defaultCenter().addObserver_selector_name_object_(
-            self, 'windowDidResize:', NSWindowDidResizeNotification, self.window
+            self, "windowDidResize:", NSWindowDidResizeNotification, self.window
         )
         # Add local mouse event monitor for left mouse down
-        self.local_mouse_monitor = NSEvent.addLocalMonitorForEventsMatchingMask_handler_(
-            NSEventMaskLeftMouseDown,  # Monitor left mouse-down events
-            self.handleLocalMouseEvent  # Handler method
+        self.local_mouse_monitor = (
+            NSEvent.addLocalMonitorForEventsMatchingMask_handler_(
+                NSEventMaskLeftMouseDown,  # Monitor left mouse-down events
+                self.handleLocalMouseEvent,  # Handler method
+            )
         )
         # Create the event tap for key-down events
         tap = CGEventTapCreate(
-            kCGSessionEventTap, # Tap at the session level
-            kCGHeadInsertEventTap, # Insert at the head of the event queue
-            kCGEventTapOptionDefault, # Actively filter events
-            CGEventMaskBit(kCGEventKeyDown), # Capture key-down events
-            global_show_hide_listener(self), # Your callback function
-            None # Optional user info (refcon)
+            kCGSessionEventTap,  # Tap at the session level
+            kCGHeadInsertEventTap,  # Insert at the head of the event queue
+            kCGEventTapOptionDefault,  # Actively filter events
+            CGEventMaskBit(kCGEventKeyDown),  # Capture key-down events
+            global_show_hide_listener(self),  # Your callback function
+            None,  # Optional user info (refcon)
         )
         if tap:
             # Integrate the tap into the run loop
             source = CFMachPortCreateRunLoopSource(None, tap, 0)
             CFRunLoopAddSource(CFRunLoopGetCurrent(), source, kCFRunLoopCommonModes)
             CGEventTapEnable(tap, True)
-            CFRunLoopRun() # Start the run loop
+            CFRunLoopRun()  # Start the run loop
         else:
             print("Failed to create event tap. Check Accessibility permissions.")
         # Load the custom launch trigger if the user set it.
@@ -238,9 +284,7 @@ class AppDelegate(NSObject):
         dataStore = self.webview.configuration().websiteDataStore()
         dataTypes = WKWebsiteDataStore.allWebsiteDataTypes()
         dataStore.removeDataOfTypes_modifiedSince_completionHandler_(
-            dataTypes,
-            NSDate.distantPast(),
-            lambda: print("Data cleared")
+            dataTypes, NSDate.distantPast(), lambda: print("Data cleared")
         )
 
     # Go to the default landing website for the overlay (in case accidentally navigated away).
@@ -263,11 +307,6 @@ class AppDelegate(NSObject):
 
     # For capturing key commands while the key window (in focus).
     def keyDown_(self, event):
-		# Add this new block to handle the Escape key
-        if event.keyCode() == 53:  # Key code for Escape
-            self.hideWindow_(None)
-            return
-
         modifiers = event.modifierFlags()
         key_command = modifiers & NSCommandKeyMask
         key_alt = modifiers & NSAlternateKeyMask
@@ -277,22 +316,22 @@ class AppDelegate(NSObject):
         # Command (NOT alt)
         if (key_command or key_control) and (not key_alt):
             # Select all
-            if key == 'a':
+            if key == "a":
                 self.window.firstResponder().selectAll_(None)
             # Copy
-            elif key == 'c':
+            elif key == "c":
                 self.window.firstResponder().copy_(None)
             # Cut
-            elif key == 'x':
+            elif key == "x":
                 self.window.firstResponder().cut_(None)
             # Paste
-            elif key == 'v':
+            elif key == "v":
                 self.window.firstResponder().paste_(None)
             # Hide
-            elif key == 'h':
+            elif key == "h":
                 self.hideWindow_(None)
             # New Chat (Command+N)
-            elif key == 'n':
+            elif key == "n":
                 # Try to click Gemini's "New chat" button (falls back to reload)
                 js = """
                 (function(){
@@ -303,7 +342,7 @@ class AppDelegate(NSObject):
                 """
                 self.webview.evaluateJavaScript_completionHandler_(js, None)
             # Toggle Sidebar (Ctrl+Cmd+S)
-            elif key == 's' and key_control and key_command:
+            elif key == "s" and key_control and key_command:
                 js = """
                 (function(){
                   const selectors=[
@@ -317,10 +356,10 @@ class AppDelegate(NSObject):
                 """
                 self.webview.evaluateJavaScript_completionHandler_(js, None)
             # Quit
-            elif key == 'q':
+            elif key == "q":
                 NSApp.terminate_(None)
             # Open Saved Info (Cmd + ,)
-            elif key == ',' and key_command and not key_control and not key_alt:
+            elif key == "," and key_command and not key_control and not key_alt:
                 js = """
                 (function(){
                   function clickSettings(){
@@ -341,6 +380,19 @@ class AppDelegate(NSObject):
                   }
                   if(clickSettings()){
                     setTimeout(clickSaved, 50);
+                  }
+                })();
+                """
+                self.webview.evaluateJavaScript_completionHandler_(js, None)
+            # Switch Model (Cmd+M)
+            elif key == "m" and key_command and not key_control and not key_alt:
+                js = """
+                (function(){
+                  // Find the model selector button
+                  const modelBtn = document.querySelector('[data-test-id="bard-mode-menu-button"]');
+                  if (modelBtn) {
+                    // Click to open the menu
+                    modelBtn.click();
                   }
                 })();
                 """
@@ -370,16 +422,29 @@ class AppDelegate(NSObject):
     def windowDidResize_(self, notification):
         bounds = self.window.contentView().bounds()
         w, h = bounds.size.width, bounds.size.height
-        self.drag_area.setFrame_(NSMakeRect(0, h - DRAG_AREA_HEIGHT, w, DRAG_AREA_HEIGHT))
+        self.drag_area.setFrame_(
+            NSMakeRect(0, h - DRAG_AREA_HEIGHT, w, DRAG_AREA_HEIGHT)
+        )
         self.webview.setFrame_(NSMakeRect(0, 0, w, h - DRAG_AREA_HEIGHT))
 
     # Handler for setting the background color based on the web page background color.
-    def userContentController_didReceiveScriptMessage_(self, userContentController, message):
+    def userContentController_didReceiveScriptMessage_(
+        self, userContentController, message
+    ):
         if message.name() == "backgroundColorHandler":
             bg_color_str = message.body()
             # Convert CSS color to NSColor (assuming RGB for simplicity)
-            if bg_color_str.startswith("rgb") and ("(" in bg_color_str) and (")" in bg_color_str):
-                rgb_values = [float(val) for val in bg_color_str[bg_color_str.index("(")+1:bg_color_str.index(")")].split(",")]
+            if (
+                bg_color_str.startswith("rgb")
+                and ("(" in bg_color_str)
+                and (")" in bg_color_str)
+            ):
+                rgb_values = [
+                    float(val)
+                    for val in bg_color_str[
+                        bg_color_str.index("(") + 1 : bg_color_str.index(")")
+                    ].split(",")
+                ]
                 r, g, b = [val / 255.0 for val in rgb_values[:3]]
                 color = NSColor.colorWithCalibratedRed_green_blue_alpha_(r, g, b, 1.0)
                 self.drag_area.setBackgroundColor_(color)
@@ -387,13 +452,20 @@ class AppDelegate(NSObject):
     # Logic for checking what color the logo in the status bar should be, and setting appropriate logo.
     def updateStatusItemImage(self):
         appearance = self.status_item.button().effectiveAppearance()
-        if appearance.bestMatchFromAppearancesWithNames_([NSAppearanceNameAqua, NSAppearanceNameDarkAqua]) == NSAppearanceNameDarkAqua:
+        if (
+            appearance.bestMatchFromAppearancesWithNames_(
+                [NSAppearanceNameAqua, NSAppearanceNameDarkAqua]
+            )
+            == NSAppearanceNameDarkAqua
+        ):
             self.status_item.button().setImage_(self.logo_white)
         else:
             self.status_item.button().setImage_(self.logo_black)
 
     # Observer that is triggered whenever the color of the status bar logo might need to be updated.
-    def observeValueForKeyPath_ofObject_change_context_(self, keyPath, object, change, context):
+    def observeValueForKeyPath_ofObject_change_context_(
+        self, keyPath, object, change, context
+    ):
         if context == STATUS_ITEM_CONTEXT and keyPath == "effectiveAppearance":
             self.updateStatusItemImage()
 
@@ -407,7 +479,8 @@ class AppDelegate(NSObject):
         # Page loaded, focus prompt area after small delay to ensure textarea exists
         # Delay 0.1 s, then focus prompt (use NSTimer – PyObjC provides selector call)
         NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
-            0.1, self, '_focusPromptTimerFired:', None, False)
+            0.1, self, "_focusPromptTimerFired:", None, False
+        )
 
     # Helper called by timer
     def _focusPromptTimerFired_(self, timer):
